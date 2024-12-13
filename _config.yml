@@ -70,7 +70,7 @@ reCaptcha:
   secret:
 atom_feed:
   path: # blank (default) uses feed.xml
-  hide: # true, false (default)
+  hide: true # true, false (default)
 search: true #false (default)
 search_full_content: true # false (default)
 search_provider: # lunr (default), algolia, google
@@ -92,12 +92,12 @@ yandex_site_verification:
 baidu_site_verification:
 
 # Social Sharing
-twitter:
-  username:
-facebook:
-  username:
-  app_id:
-  publisher:
+# twitter:
+#   username:
+# facebook:
+#   username:
+#   app_id:
+#   publisher:
 og_image: # Open Graph/Twitter default site image
 # For specifying social profiles
 # - https://developers.google.com/structured-data/customize/social-profiles
@@ -117,8 +117,8 @@ analytics:
 author:
   name: "blend-tea"
   avatar: # path of avatar image, e.g. "/assets/images/bio-photo.jpg"
-  bio: "リバースエンジニアリングに興味のある学生です"
-  location: "Somewhere"
+  bio: "リバースエンジニアリングに興味のある学生"
+  # location: "Somewhere"
   email:
   links:
     # - label: "Email"
@@ -216,6 +216,10 @@ kramdown:
   toc_levels: 1..6
   smart_quotes: lsquo,rsquo,ldquo,rdquo
   enable_coderay: false
+  syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    block:
+      line_numbers: true
 
 # Sass/SCSS
 sass:
@@ -310,8 +314,12 @@ defaults:
       type: posts
     values:
       layout: single
+      # classes: wide
+      toc: true
+      toc_label: "Index"
+      toc_sticky: true
       author_profile: true
       read_time: true
       comments: # true
-      share: true
+      share: false
       related: true
