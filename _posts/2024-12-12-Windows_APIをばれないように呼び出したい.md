@@ -1,12 +1,16 @@
 ---
-title: "Windows APIをばれないように呼び出したい" 
+title: "Windows APIをばれないように呼び出したい"
 slug: "want-to-call-windows-api-stealthily"
+date: "2024-12-13"
 ---
+
 ゲームとかアプリを作るときって、やっぱ解析されづらい最強バイナリ作りたいよね～
 
-デバッグ検知とかだとIsDebuggerPresentだったりNtSetInformationThreadだったり使ってデバッガ対策するのが淑女の嗜みだけど
-普通にWindows APIを呼び出そうものなら簡単にばれてしまう
-# 普通にWindows APIを呼び出す
+デバッグ検知とかだと IsDebuggerPresent だったり NtSetInformationThread だったり使ってデバッガ対策するのが淑女の嗜みだけど
+普通に Windows API を呼び出そうものなら簡単にばれてしまう
+
+# 普通に Windows API を呼び出す
+
 ```rust
 #[cfg(windows)]
 extern crate winapi;
@@ -24,7 +28,9 @@ fn main() {
     }
 }
 ```
-これを適当にコンパイルしてGhidraで解析すると
+
+これを適当にコンパイルして Ghidra で解析すると
+
 ```c
 void UndefinedFunction_14000100c(undefined8 param_1,undefined8 param_2)
 
@@ -34,7 +40,7 @@ void UndefinedFunction_14000100c(undefined8 param_1,undefined8 param_2)
   undefined8 uStack_28;
   undefined8 uStack_20;
   undefined auStack_18 [16];
-  
+
   BVar1 = IsDebuggerPresent();
   if (BVar1 == 0) {
     ppuStack_30 = &PTR_s_No_debugger_detected_1400173f8;
@@ -50,10 +56,13 @@ void UndefinedFunction_14000100c(undefined8 param_1,undefined8 param_2)
 }
 
 ```
-とIsDebuggerPresentを使っているのがばれる。
 
-# LoadLibraryを使う
-LoadLibraryとGetProcAddressを使う
+と IsDebuggerPresent を使っているのがばれる。
+
+# LoadLibrary を使う
+
+LoadLibrary と GetProcAddress を使う
+
 ```rust
 #[cfg(windows)]
 use winapi::um::libloaderapi::{LoadLibraryA, GetProcAddress};
@@ -84,7 +93,9 @@ fn main() {
     }
 }
 ```
+
 Ghidra
+
 ```c
 
 void UndefinedFunction_1400011db(void)
@@ -106,7 +117,7 @@ void UndefinedFunction_1400011db(void)
   undefined8 uStack_50;
   undefined8 uStack_48;
   undefined auStack_40 [16];
-  
+
   FUN_1400016e0((longlong *)&uStack_78,"kernel32.dll<redacted>",(void *)0xc);
   if (CONCAT44(uStack_74,uStack_78) == -0x8000000000000000) {
     lpLibFileName = (LPCSTR)CONCAT44(uStack_6c,uStack_70);
@@ -139,9 +150,13 @@ void UndefinedFunction_1400011db(void)
   return;
 }
 ```
-これだけでもかなり分かりづらくなった。でもIsDebuggerPresentの文字があるのが気になる。
+
+これだけでもかなり分かりづらくなった。でも IsDebuggerPresent の文字があるのが気になる。
+
 # 文字列難読化する
-obfstr crateを使う
+
+obfstr crate を使う
+
 ```rust
 #[cfg(windows)]
 use winapi::um::libloaderapi::{LoadLibraryA, GetProcAddress};
@@ -173,8 +188,10 @@ fn main() {
     }
 }
 ```
+
 Ghidra
 長いので一部省略
+
 ```c
 
 void UndefinedFunction_140001219(void)
@@ -222,19 +239,22 @@ void UndefinedFunction_140001219(void)
   return;
 }
 ```
+
 これで完璧？いいえまだです。
 
 ![debugger_result1](/blog/assets/images/2024-12-11-194016.png){: .align-center}
 
-デバッガを使うとGetProcAddressの引数がばれてしまいます。
+デバッガを使うと GetProcAddress の引数がばれてしまいます。
 
-# GetProcAddressを改造
-ループ処理でdllの関数名からハッシュ値を生成し比較。マッチしたら返す。ハッシュアルゴリズムにはfnv-1aの64bitを使用。ついでにマクロを作成。ちょっとした嫌がらせ程度にハッシュ関数をインライン展開。
+# GetProcAddress を改造
 
-**ちょっとした裏話：**最初はwindows-rs crateを使っていたんだけどIMAGE_NT_HEADERSとかがうまくうごかなかったり調子が悪そうだったのでwinapiに変更した。
+ループ処理で dll の関数名からハッシュ値を生成し比較。マッチしたら返す。ハッシュアルゴリズムには fnv-1a の 64bit を使用。ついでにマクロを作成。ちょっとした嫌がらせ程度にハッシュ関数をインライン展開。
+
+**ちょっとした裏話：**最初は windows-rs crate を使っていたんだけど IMAGE_NT_HEADERS とかがうまくうごかなかったり調子が悪そうだったので winapi に変更した。
 {: .notice}
 
 以下コード。長くなってきたので主な追加箇所のみ
+
 ```rust
 macro_rules! func_to_hash {
     ($function_name:expr) => {
@@ -274,13 +294,13 @@ fn fnv1a_64(s: &str) -> u64 {
     hash
 }
 ```
+
 マッチしたタイミングでループを抜けるとループの直後にブレークポイントを設置するとばれた。
 
-なのでループ脱出後にreturnするようにした。
+なのでループ脱出後に return するようにした。
 
 ![debugger_result2](/blog/assets/images/2024-12-11-201217.png){: .align-center}
 
-
-
 # まとめ
-これでCTFのrev問でもつくったら楽しそうだけど解けるのかな？
+
+これで CTF の rev 問でもつくったら楽しそうだけど解けるのかな？
