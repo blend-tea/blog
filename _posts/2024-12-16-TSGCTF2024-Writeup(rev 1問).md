@@ -1,5 +1,5 @@
 ---
-title: "TSGCTF2024-Writeup(rev 1問)"
+title: "TSG CTF 2024 Writeup(rev 1問)"
 slug: "tsgctf2024-writeup"
 date: "2024-12-16"
 ---
