@@ -1,7 +1,7 @@
 ---
 title: "Binary Ninjaの使い方"
 slug: "how-to-use-binaryninja"
-date: "2024-12-26"
+date: "2024-12-25"
 ---
 
 個人的にCTFでBinary Ninjaを使う機会が多いので、簡単な使い方をまとめておく。
